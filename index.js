@@ -1,5 +1,7 @@
-var express = require('express'),
-  sio = require('socket.io');
+var express = require('express')
+, sio = require('socket.io');
+
+require('date-utils');
 
 var app = express()
 , server = require('http').createServer(app);
@@ -21,7 +23,8 @@ io.sockets.on('connection', function(socket) {
   });
   socket.on('text', function(msg) {
     // io.sockets.emit('news', msg);
-    socket.broadcast.emit('text', socket.nickname, msg);
+    time = (new Date()).toFormat('HH24:MI:SS');
+    socket.broadcast.emit('text', socket.nickname, '(' + time + ') ' + msg);
   })
 });
 

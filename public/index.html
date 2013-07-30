@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
 <head>
-  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="date-utils.min.js"></script>
   <script type="text/javascript" charset="utf-8">
     function addMessage(from, text) {
       var li = document.createElement('li');
@@ -12,6 +13,7 @@
   
     window.onload = function() {
       console.debug('client start')
+      // var socket = io.connect('http://50.17.208.60:3000');
       var socket = io.connect('http://localhost:3000');
   
       socket.on('connect', function() {
@@ -29,7 +31,8 @@
       // send caption
       var input = document.getElementById('input');
       document.getElementById('form').onsubmit = function() {
-        addMessage('me', input.value);
+        time = (new Date()).toFormat('HH24:MI:SS');
+        addMessage('me', '('+ time + ') ' + input.value);
         socket.emit('text', input.value);
         input.value = '';
         input.focus();

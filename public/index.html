@@ -4,14 +4,23 @@
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="date-utils.min.js"></script>
   <script type="text/javascript" charset="utf-8">
+    function playSound() {
+      soundHandle.play();
+    }
+  
     function addMessage(from, text) {
       var li = document.createElement('li');
       li.className = 'message';
       li.innerHTML = '<b>' + from + '</b>: ' + text;
       document.getElementById('messages').appendChild(li);
+      if (from != 'me') playSound();
     }
   
     window.onload = function() {
+      soundHandle = document.getElementById('soundHandle');
+      // soundHandle.src = '/censor.mp3';
+      soundHandle.src = '/mouse.wav';
+      
       console.debug('client start')
       // var socket = io.connect('http://50.17.208.60:3000');
       var socket = io.connect('http://localhost:3000');
@@ -31,6 +40,7 @@
       // send caption
       var input = document.getElementById('input');
       document.getElementById('form').onsubmit = function() {
+        if (input.value == '') return false;
         time = (new Date()).toFormat('HH24:MI:SS');
         addMessage('me', '('+ time + ') ' + input.value);
         socket.emit('text', input.value);
@@ -43,6 +53,7 @@
 </head>
 
 <body>
+  <audio id="soundHandle" style="display: none;"></audio>
   <div id="chat">
     <ul id="messages"></ul>
     <form id="form">

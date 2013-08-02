@@ -9,9 +9,10 @@
     }
   
     function addMessage(from, text) {
+      var time = '(' + (new Date()).toFormat('HH24:MI:SS') + ')';
       var li = document.createElement('li');
       li.className = 'message';
-      li.innerHTML = '<b>' + from + '</b>: ' + text;
+      li.innerHTML = '<b>' + from + ' ' + time + '</b>: ' + text;
       document.getElementById('messages').appendChild(li);
       if (from != 'me') playSound();
     }
@@ -41,8 +42,7 @@
       var input = document.getElementById('input');
       document.getElementById('form').onsubmit = function() {
         if (input.value == '') return false;
-        time = (new Date()).toFormat('HH24:MI:SS');
-        addMessage('me', '('+ time + ') ' + input.value);
+        addMessage('me', input.value);
         socket.emit('text', input.value);
         input.value = '';
         input.focus();

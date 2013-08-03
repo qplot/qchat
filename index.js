@@ -29,35 +29,42 @@ var Chat = mongoose.model('chat', ChatSchema);
 var io = sio.listen(server);
 io.sockets.on('connection', function(socket) {
   // console.log('someone connected');
-  socket.on('join', function(name) {
-    socket.nickname = name;
-    // emit to that client
-    // socket.emit('news', name + ' joined the chat.');
-    // emit to all clients
-    // io.sockets.emit('news', name + ' joined the chat.');
 
-    // emit old message to the board
+  // listen to user join event
+  socket.on('user_join', function(name) {
+    socket.nickname = name;
+
+    // emit old message to this user
     Chat.find({}, 'message author date').exec(function(err, chats) {
       for (var i in chats) {
-        socket.emit('text', chats[i].author, chats[i].message);
+        socket.emit('message_out', chats[i]);
       }
-      // console.log(chats);
-    })
+    });
 
-    // emit to all except this client
-    socket.broadcast.emit('news', name + ' joined the chat.');
+    // emit join message to all users except this user
+    socket.broadcast.emit('message_out', {
+      message: ' I joined the chat.'
+    , author: socket.nickname
+    , date: Date.now
+    });
+
   });
-  socket.on('text', function(msg) {
-    // io.sockets.emit('news', msg);
+
+  // listen to message in event
+  socket.on('message_in', function(msg) {
     // time = (new Date()).toFormat('HH24:MI:SS');
 
-    // store the message
-    new Chat({ 
-      message: msg
-    , author: socket.nickname 
-    }).save(function(err) {});
-    // broadcast the message
-    socket.broadcast.emit('text', socket.nickname, msg);
+    // assign a datestamp to the incoming message
+    msg.date = Date.now;
+    // store the message to database
+    new Chat(msg).save(function(err) {});
+    // broadcast the message to all users
+    io.sockets.emit('message_out', msg);
+    // socket.broadcast.emit('text', socket.nickname, msg);
   })
+
+  // listen to message out event, never
+
+
 });
 

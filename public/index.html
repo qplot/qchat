@@ -2,21 +2,29 @@
 <html>
 <head>
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
-  <script type="text/javascript" src="date-utils.min.js"></script>
+  <script type="text/javascript" src="moment.min.js"></script>
   <script type="text/javascript" charset="utf-8">
     var user = 'ann';
-    
+
     function playSound() {
       soundHandle.play();
     }
   
-    function addMessage(from, text) {
-      var time = '(' + (new Date()).toFormat('HH24:MI:SS') + ')';
+    // function addMessage(from, text) {
+    //   var time = '(' + (new Date()).toFormat('HH24:MI:SS') + ')';
+    //   var li = document.createElement('li');
+    //   li.className = 'message';
+    //   li.innerHTML = '<b>' + from + ' ' + time + '</b>: ' + text;
+    //   document.getElementById('messages').appendChild(li);
+    //   if (from != user) playSound();
+    // }
+
+    function addMessage(msg) {
       var li = document.createElement('li');
       li.className = 'message';
-      li.innerHTML = '<b>' + from + ' ' + time + '</b>: ' + text;
+      var time = moment(msg.date).calendar();
+      li.innerHTML = '<b>' + msg.author + ' (' + time + ')' + '</b>: ' + msg.message;
       document.getElementById('messages').appendChild(li);
-      if (from != user) playSound();
     }
   
     window.onload = function() {
@@ -30,21 +38,38 @@
   
       socket.on('connect', function() {
         user = prompt('What is your nickname?');
-        socket.emit('join', user);
+        socket.emit('user_join', user);
       });
-      socket.on('news', function(msg) {
-        addMessage(user, msg);
+
+      // listen for announcement
+      // socket.on('user_join', function(msg) {
+      //   addMessage(msg);
+      // });
+
+      // listen to text message
+      socket.on('message_out', function(msg) {
+        addMessage(msg);
+        if (msg.author != user) playSound();
       });
-      socket.on('text', addMessage);
 
       // send caption
       var input = document.getElementById('input');
       document.getElementById('form').onsubmit = function() {
+        // make sure input is not empty
         if (input.value == '') return false;
-        addMessage(user, input.value);
-        socket.emit('text', input.value);
+        // construct a message obj
+        var msg = {
+          author: user
+        , message: input.value 
+        };
+        // emit this message out
+        socket.emit('message_in', msg);
+        // display it
+        // addMessage(msg);
+        // clean the input
         input.value = '';
         input.focus();
+        // return
         return false;
       }
     }

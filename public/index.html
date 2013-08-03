@@ -4,6 +4,8 @@
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="date-utils.min.js"></script>
   <script type="text/javascript" charset="utf-8">
+    var user = 'ann';
+    
     function playSound() {
       soundHandle.play();
     }
@@ -14,7 +16,7 @@
       li.className = 'message';
       li.innerHTML = '<b>' + from + ' ' + time + '</b>: ' + text;
       document.getElementById('messages').appendChild(li);
-      if (from != 'me') playSound();
+      if (from != user) playSound();
     }
   
     window.onload = function() {
@@ -27,14 +29,11 @@
       var socket = io.connect('http://localhost:3000');
   
       socket.on('connect', function() {
-        socket.emit('join', prompt('What is your nickname?'));
+        user = prompt('What is your nickname?');
+        socket.emit('join', user);
       });
       socket.on('news', function(msg) {
-        console.debug(msg);
-        var li = document.createElement('li');
-        li.className = 'annoucement';
-        li.innerHTML = msg;
-        document.getElementById('messages').appendChild(li);
+        addMessage(user, msg);
       });
       socket.on('text', addMessage);
 
@@ -42,7 +41,7 @@
       var input = document.getElementById('input');
       document.getElementById('form').onsubmit = function() {
         if (input.value == '') return false;
-        addMessage('me', input.value);
+        addMessage(user, input.value);
         socket.emit('text', input.value);
         input.value = '';
         input.focus();

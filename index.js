@@ -35,6 +35,15 @@ io.sockets.on('connection', function(socket) {
     // socket.emit('news', name + ' joined the chat.');
     // emit to all clients
     // io.sockets.emit('news', name + ' joined the chat.');
+
+    // emit old message to the board
+    Chat.find({}, 'message author date').exec(function(err, chats) {
+      for (var i in chats) {
+        socket.emit('text', chats[i].author, chats[i].message);
+      }
+      // console.log(chats);
+    })
+
     // emit to all except this client
     socket.broadcast.emit('news', name + ' joined the chat.');
   });

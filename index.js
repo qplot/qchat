@@ -55,9 +55,13 @@ io.sockets.on('connection', function(socket) {
     // time = (new Date()).toFormat('HH24:MI:SS');
 
     // assign a datestamp to the incoming message
-    msg.date = Date.now;
+    // var time = Date.now();
+    msg.date = Date.now();
+    console.log(msg);
     // store the message to database
-    new Chat(msg).save(function(err) {});
+    new Chat(msg).save(function(err) {
+      console.log('saved');
+    });
     // broadcast the message to all users
     io.sockets.emit('message_out', msg);
     // socket.broadcast.emit('text', socket.nickname, msg);

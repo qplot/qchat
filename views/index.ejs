@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="moment.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    var user = 'ann';
+    var chatroom = '<%= chatroom %>';
+    console.debug(chatroom);
+
+    function playSound() {
+      soundHandle.play();
+    }
+  
+    // function addMessage(from, text) {
+    //   var time = '(' + (new Date()).toFormat('HH24:MI:SS') + ')';
+    //   var li = document.createElement('li');
+    //   li.className = 'message';
+    //   li.innerHTML = '<b>' + from + ' ' + time + '</b>: ' + text;
+    //   document.getElementById('messages').appendChild(li);
+    //   if (from != user) playSound();
+    // }
+
+    function addMessage(msg) {
+      var li = document.createElement('li');
+      li.className = 'message';
+      var time = moment(msg.date).calendar();
+      if (msg.author == user) msg.author = 'me';
+      li.innerHTML = '<b>' + msg.author + ' (' + time + ')' + '</b>: ' + msg.message;
+      document.getElementById('messages').appendChild(li);
+    }
+  
+    window.onload = function() {
+      soundHandle = document.getElementById('soundHandle');
+      // soundHandle.src = '/censor.mp3';
+      soundHandle.src = '/mouse.wav';
+      
+      console.debug('client start')
+      // var socket = io.connect('http://50.17.208.60:3000');
+      var socket = io.connect('http://localhost:3000');
+  
+      socket.on('connect', function() {
+        socket.emit('user_join', {
+          username: prompt('What is your nickname?')
+        , chatroom: chatroom
+        });
+      });
+
+      // listen for announcement
+      // socket.on('user_join', function(msg) {
+      //   addMessage(msg);
+      // });
+
+      // listen to text message
+      socket.on('message_out', function(msg) {
+        addMessage(msg);
+        if (msg.author != user) playSound();
+      });
+
+      // send caption
+      var input = document.getElementById('input');
+      document.getElementById('form').onsubmit = function() {
+        // make sure input is not empty
+        if (input.value == '') return false;
+        // construct a message obj
+        var msg = {
+          author: user
+        , message: input.value 
+        };
+        // emit this message out
+        socket.emit('message_in', msg);
+        // display it
+        // addMessage(msg);
+        // clean the input
+        input.value = '';
+        input.focus();
+        // return
+        return false;
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <audio id="soundHandle" style="display: none;"></audio>
+  <div id="chat">
+    <ul id="messages"></ul>
+    <form id="form">
+      <input type="text" id="input" />
+      <button>Send</button>
+    </form>
+</body>
+</html>

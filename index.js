@@ -38,7 +38,16 @@ var Chat = mongoose.model('chat', ChatSchema);
 // start socket server
 var io = sio.listen(server);
 io.sockets.on('connection', function(socket) {
+  socket.chatroom = '';
   // console.log('someone connected');
+
+  function broadcastMessage(m) {
+    var clients = io.sockets.clients();
+    for (var i in clients) {
+      if (clients[i].chatroom == socket.chatroom)
+        clients[i].emit('message_out', m);
+    }
+  }
 
   // listen to user join event
   socket.on('user_join', function(join) {
@@ -53,13 +62,14 @@ io.sockets.on('connection', function(socket) {
     });
 
     // emit join message to all users except this user
-    socket.broadcast.emit('message_out', {
+    // socket.broadcast.emit('message_out', {
+    // io.of('/' + socket.chatroom).emit('message_out', {
+    broadcastMessage({
       message: ' I joined the chat.'
     , author: socket.nickname
     , date: Date.now
     , chatroom: socket.chatroom
     });
-
   });
 
   // listen to message in event
@@ -77,7 +87,12 @@ io.sockets.on('connection', function(socket) {
       console.log('saved');
     });
     // broadcast the message to all users
-    io.sockets.emit('message_out', msg);
+    // io.of('/' + socket.chatroom).emi('message_out', msg);
+
+    // broadcast to the right chatroom
+    broadcastMessage(msg);
+    // instead of sending to everyone
+    // io.sockets.emit('message_out', msg);
     // socket.broadcast.emit('text', socket.nickname, msg);
   })
 

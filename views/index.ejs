@@ -4,9 +4,11 @@
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="moment.min.js"></script>
   <script type="text/javascript" charset="utf-8">
+    var server = 'http://localhost:3000';
+      // var socket = io.connect('http://50.17.208.60:3000');
     var user = 'ann';
     var chatroom = '<%= chatroom %>';
-    console.debug(chatroom);
+    console.debug('chatroom ' + chatroom);
 
     function playSound() {
       soundHandle.play();
@@ -35,13 +37,14 @@
       // soundHandle.src = '/censor.mp3';
       soundHandle.src = '/mouse.wav';
       
-      console.debug('client start')
-      // var socket = io.connect('http://50.17.208.60:3000');
-      var socket = io.connect('http://localhost:3000');
+      var socket = io.connect(server);
+      // var socket = io.connect('http://localhost:3000/chat/surazal');
   
       socket.on('connect', function() {
+        console.debug('client connected');
+        var username = prompt('What is your nickname?');
         socket.emit('user_join', {
-          username: prompt('What is your nickname?')
+          username: username
         , chatroom: chatroom
         });
       });

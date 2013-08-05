@@ -1,11 +1,11 @@
+// get app settings
+var config = require('./config.js');
+
 // require component
 var express = require('express')
+, routes = require('./routes')
 , mongoose = require('mongoose')
 , sio = require('socket.io');
-
-// require('date-utils');
-
-var config = require('./config.js');
 
 // start express server
 var app = express()
@@ -14,15 +14,7 @@ var app = express()
 app.set('view engine', 'ejs');
 app.set('view options', {layout: false});
 app.use(express.static('public'));
-app.get('/:chatroom?', function(req, res, next) {
-  // console.log(req.params.chatroom);
-  chatroom = '';
-  if (req.params.chatroom) chatroom = req.params.chatroom;
-  res.render('index', {
-    config: config
-  , chatroom: chatroom
-  });
-});
+app.get('/:chatroom?', routes.index(config));
 
 server.listen(config.port);
 

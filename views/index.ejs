@@ -4,25 +4,18 @@
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="moment.min.js"></script>
   <script type="text/javascript" charset="utf-8">
-    var server = 'http://localhost:3000';
+    // var server = 'http://localhost:3000';
       // var socket = io.connect('http://50.17.208.60:3000');
     var user = 'ann';
     var chatroom = '<%= chatroom %>';
+    var server = '<%= config.host + ':' + config.port %>';
+    var soundfile = '<%= config.soundfile %>';
     console.debug('chatroom ' + chatroom);
 
     function playSound() {
       soundHandle.play();
     }
   
-    // function addMessage(from, text) {
-    //   var time = '(' + (new Date()).toFormat('HH24:MI:SS') + ')';
-    //   var li = document.createElement('li');
-    //   li.className = 'message';
-    //   li.innerHTML = '<b>' + from + ' ' + time + '</b>: ' + text;
-    //   document.getElementById('messages').appendChild(li);
-    //   if (from != user) playSound();
-    // }
-
     function addMessage(msg) {
       var li = document.createElement('li');
       li.className = 'message';
@@ -33,13 +26,14 @@
     }
   
     window.onload = function() {
+      // setup sound file
       soundHandle = document.getElementById('soundHandle');
-      // soundHandle.src = '/censor.mp3';
-      soundHandle.src = '/mouse.wav';
+      soundHandle.src = '/' + soundfile;
       
+      // connect to socket
       var socket = io.connect(server);
-      // var socket = io.connect('http://localhost:3000/chat/surazal');
-  
+
+      // listen to connect message
       socket.on('connect', function() {
         console.debug('client connected');
         var username = prompt('What is your nickname?');
@@ -48,11 +42,6 @@
         , chatroom: chatroom
         });
       });
-
-      // listen for announcement
-      // socket.on('user_join', function(msg) {
-      //   addMessage(msg);
-      // });
 
       // listen to text message
       socket.on('message_out', function(msg) {

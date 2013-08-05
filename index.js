@@ -5,6 +5,8 @@ var express = require('express')
 
 // require('date-utils');
 
+var config = require('./config.js');
+
 // start express server
 var app = express()
 , server = require('http').createServer(app);
@@ -16,13 +18,16 @@ app.get('/:chatroom?', function(req, res, next) {
   // console.log(req.params.chatroom);
   chatroom = '';
   if (req.params.chatroom) chatroom = req.params.chatroom;
-  res.render('index', {chatroom: chatroom});
+  res.render('index', {
+    config: config
+  , chatroom: chatroom
+  });
 });
 
-server.listen(3000);
+server.listen(config.port);
 
 // start mongodb server
-mongoose.connect('mongodb://localhost/qchat');
+mongoose.connect(config.database);
 var Schema = mongoose.Schema
 , ObjectId = Schema.ObjectId;
 

@@ -1,15 +1,19 @@
 <!doctype html>
 <html>
 <head>
+  <link rel="stylesheet" type="text/css" href="bubbles.css">
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
   <script type="text/javascript" src="moment.min.js"></script>
+  <script type="text/javascript" src="underscore-min.js"></script>
   <script type="text/javascript" charset="utf-8">
     // var server = 'http://localhost:3000';
       // var socket = io.connect('http://50.17.208.60:3000');
-    var user = 'ann';
+    var username = 'ann';
     var chatroom = '<%= chatroom %>';
     var server = '<%= config.host + ':' + config.port %>';
     var soundfile = '<%= config.soundfile %>';
+    _.templateSettings = { interpolate : /\{\{(.+?)\}\}/g };
+    var msgTemplate = _.template("<div class='bubble {{orient}} {{color}}'>{{message}}<small>{{footer}}</small></div>");
     console.debug('chatroom ' + chatroom);
 
     function playSound() {
@@ -17,11 +21,23 @@
     }
   
     function addMessage(msg) {
-      var li = document.createElement('li');
+      var li = document.createElement('div');
       li.className = 'message';
       var time = moment(msg.date).calendar();
-      if (msg.author == user) msg.author = 'me';
-      li.innerHTML = '<b>' + msg.author + ' (' + time + ')' + '</b>: ' + msg.message;
+      // li.innerHTML = '<b>' + msg.author + ' (' + time + ')' + '</b>: ' + msg.message;
+      // li.innerHTML = "<div class='bubble right green'>" + msg.message + "<small>" + time + "</small>" + "</div>";
+      var bubble = {
+        orient: 'right'
+      , color: 'blue'
+      , message: msg.message
+      , footer: time
+      };
+      if (msg.author != username) {
+        // msg.author = 'me';
+        bubble.orient = 'left';
+        bubble.color = 'green';
+      }
+      li.innerHTML = msgTemplate(bubble);
       document.getElementById('messages').appendChild(li);
     }
   
@@ -36,7 +52,7 @@
       // listen to connect message
       socket.on('connect', function() {
         console.debug('client connected');
-        var username = prompt('What is your nickname?');
+        username = prompt('What is your nickname?');
         socket.emit('user_join', {
           username: username
         , chatroom: chatroom
@@ -46,7 +62,7 @@
       // listen to text message
       socket.on('message_out', function(msg) {
         addMessage(msg);
-        if (msg.author != user) playSound();
+        if (msg.author != username) playSound();
       });
 
       // send caption
@@ -56,7 +72,7 @@
         if (input.value == '') return false;
         // construct a message obj
         var msg = {
-          author: user
+          author: username
         , message: input.value 
         };
         // emit this message out
@@ -74,6 +90,12 @@
 </head>
 
 <body>
+
+<!--   <div class="bubble right green">
+    fejfiewjf
+    <small>Sent 15th Septeber</small>
+  </div>
+ -->
   <audio id="soundHandle" style="display: none;"></audio>
   <div id="chat">
     <ul id="messages"></ul>

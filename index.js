@@ -24,6 +24,8 @@ var qchat  = require('./sockets/connection');
 qchat.listen(io);
 io.sockets.on('connection', qchat.connection);
 
+
+
 // io.sockets.on('connection', function(socket) {
 //   socket.chatroom = '';
 //   // console.log('someone connected');

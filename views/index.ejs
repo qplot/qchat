@@ -40,6 +40,15 @@
       li.innerHTML = msgTemplate(bubble);
       document.getElementById('messages').appendChild(li);
     }
+
+    function addUser(u) {
+      var li = document.createElement('div');
+      li.innerHTML = u;
+      document.getElementById('user').appendChild(li);
+    }
+    function removeUser(u) {
+      addUser(u);
+    }
   
     window.onload = function() {
       // setup sound file
@@ -53,14 +62,24 @@
       socket.on('connect', function() {
         console.debug('client connected');
         username = prompt('What is your nickname?');
-        socket.emit('user_join', {
-          username: username
+        socket.emit('message_in', {
+          author: username
         , chatroom: chatroom
+        , action: 'join'
         });
       });
 
       // listen to text message
       socket.on('message_out', function(msg) {
+        // console.debug(msg);
+        if (msg.action == 'join') {
+          msg.message = msg.author + ' joined the chat.';
+          addUser(msg.author);
+        }
+        if (msg.action == 'leave') { 
+          msg.message = msg.author + ' left the chat.';
+          addUser(msg.author);
+        }
         addMessage(msg);
         if (msg.author != username) playSound();
       });
@@ -90,6 +109,10 @@
 </head>
 
 <body>
+
+  <div id="users">
+    <ul id="user"></ul>
+  </div>
 
 <!--   <div class="bubble right green">
     fejfiewjf
